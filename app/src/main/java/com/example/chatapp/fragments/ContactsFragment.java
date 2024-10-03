@@ -1,35 +1,30 @@
 package com.example.chatapp.fragments;
 
 import android.Manifest;
-import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-
-import com.example.chatapp.R;
 import com.example.chatapp.Adapters.ContactsListAdapter;
+import com.example.chatapp.R;
 import com.example.chatapp.models.Contact;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ContactsFragment extends Fragment {
+    private static final int REQUEST_CONTACTS_PERMISSION = 100; // Define the constant for permission request
 
-    private static final int REQUEST_CONTACTS_PERMISSION = 100;
     private ListView listView;
     private ContactsListAdapter contactsListAdapter;
     private List<Contact> contactList;
@@ -44,17 +39,24 @@ public class ContactsFragment extends Fragment {
         listView = view.findViewById(R.id.list_view);
         progressBar = view.findViewById(R.id.progress_bar);
         searchView = view.findViewById(R.id.search_view);
-
         contactList = new ArrayList<>();
 
-        // Check for permission
+        // Check permissions and fetch contacts
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_CONTACTS_PERMISSION);
         } else {
-            new FetchContactsTask().execute();
+            fetchContacts(); // Fetch contacts in a separate thread
         }
 
-        // Set up search functionality
+        listView.setOnItemClickListener((parent, view1, position, id) -> {
+            Contact selectedContact = contactList.get(position);
+            MessageFragment messageFragment = MessageFragment.newInstance(selectedContact.getName());
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, messageFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -71,100 +73,68 @@ public class ContactsFragment extends Fragment {
         return view;
     }
 
-    private void filterContacts(String query) {
-        List<Contact> filteredContactList = new ArrayList<>();
-        if (query.isEmpty()) {
-            filteredContactList.addAll(contactList); // Show all contacts if the query is empty
-        } else {
-            for (Contact contact : contactList) {
-                if (contact.getName().toLowerCase().contains(query.toLowerCase())) {
-                    filteredContactList.add(contact);
-                }
-            }
-        }
-        if (contactsListAdapter != null) {
-            contactsListAdapter.updateContacts(filteredContactList); // Update the adapter with filtered contacts
-        }
-    }
-
-    private class FetchContactsTask extends AsyncTask<Void, Void, List<Contact>> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected List<Contact> doInBackground(Void... voids) {
-            List<Contact> contacts = new ArrayList<>();
-            ContentResolver contentResolver = requireContext().getContentResolver();
-            Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-
-            if (cursor != null) {
-                if (cursor.getCount() > 0) {
+    private void fetchContacts() {
+        progressBar.setVisibility(View.VISIBLE); // Show the progress bar
+        new Thread(() -> {
+            Cursor cursor = null;
+            try {
+                cursor = requireContext().getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+                if (cursor != null && cursor.getCount() > 0) {
                     while (cursor.moveToNext()) {
-                        int idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID);
-                        int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-                        int photoUriIndex = cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_URI);
+                        String id = getColumnValue(cursor, ContactsContract.Contacts._ID);
+                        String name = getColumnValue(cursor, ContactsContract.Contacts.DISPLAY_NAME);
+                        String photoUri = getColumnValue(cursor, ContactsContract.Contacts.PHOTO_URI);
 
-                        // Validate indexes before accessing cursor
-                        if (idIndex != -1 && nameIndex != -1) {
-                            String id = cursor.getString(idIndex);
-                            String name = cursor.getString(nameIndex);
-                            String photoUri = (photoUriIndex != -1) ? cursor.getString(photoUriIndex) : null;
+                        // Fetch phone numbers for the contact
+                        Cursor phones = requireContext().getContentResolver().query(
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                                new String[]{id},
+                                null);
 
-                            // Query for phone numbers
-                            Cursor phones = contentResolver.query(
-                                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                                    null,
-                                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                                    new String[]{id},
-                                    null);
-
-                            if (phones != null) {
-                                while (phones.moveToNext()) {
-                                    int phoneIndex = phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                                    if (phoneIndex != -1) {
-                                        String phoneNumber = phones.getString(phoneIndex);
-                                        // Pass the default values for messagePreview, timestamp, and unreadCount
-                                        String messagePreview = ""; // Default message preview
-                                        String timestamp = ""; // Default timestamp
-                                        int unreadCount = 0; // Default unread count
-
-                                        contacts.add(new Contact(name, phoneNumber, photoUri, messagePreview, timestamp, unreadCount));
-                                    }
+                        if (phones != null) {
+                            while (phones.moveToNext()) {
+                                String phoneNumber = getColumnValue(phones, ContactsContract.CommonDataKinds.Phone.NUMBER);
+                                if (phoneNumber != null) {
+                                    contactList.add(new Contact(name, phoneNumber, photoUri));
                                 }
-                                phones.close();
                             }
+                            phones.close(); // Close the phones cursor
                         }
                     }
                 }
-                cursor.close();
+                // Update UI on the main thread
+                requireActivity().runOnUiThread(() -> {
+                    contactsListAdapter = new ContactsListAdapter(getContext(), contactList);
+                    listView.setAdapter(contactsListAdapter);
+                    progressBar.setVisibility(View.GONE); // Hide the progress bar after loading
+                });
+            } catch (Exception e) {
+                e.printStackTrace(); // Log any exceptions for debugging
+            } finally {
+                if (cursor != null) {
+                    cursor.close(); // Ensure the cursor is closed
+                }
             }
-
-            return contacts;
-        }
-
-        @Override
-        protected void onPostExecute(List<Contact> contacts) {
-            super.onPostExecute(contacts);
-            progressBar.setVisibility(View.GONE);
-            contactList = contacts;
-            contactsListAdapter = new ContactsListAdapter(getContext(), contactList);
-            listView.setAdapter(contactsListAdapter);
-        }
+        }).start();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CONTACTS_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                new FetchContactsTask().execute();
-            } else {
-                Log.d("ContactsFragment", "Permission denied to read contacts");
-                // Optionally, show a message to the user about why you need the permission
+    private String getColumnValue(Cursor cursor, String columnName) {
+        int columnIndex = cursor.getColumnIndex(columnName);
+        if (columnIndex != -1) {
+            return cursor.getString(columnIndex);
+        }
+        return null; // Return null if the column doesn't exist
+    }
+
+    private void filterContacts(String query) {
+        List<Contact> filteredContacts = new ArrayList<>();
+        for (Contact contact : contactList) {
+            if (contact.getName().toLowerCase().contains(query.toLowerCase())) {
+                filteredContacts.add(contact);
             }
         }
+        contactsListAdapter.updateContacts(filteredContacts);
     }
 }

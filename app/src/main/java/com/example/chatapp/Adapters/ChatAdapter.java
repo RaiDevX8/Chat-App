@@ -9,29 +9,38 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chatapp.R;
+import com.example.chatapp.fragments.MessageFragment;
 import com.example.chatapp.models.Chat;
 
 import java.util.List;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
+    public interface OnChatClickListener {
+        void onChatClick(Chat chat);  // Listener interface for clicks
+    }
+
     private List<Chat> chatList;
     private Context context;
+    private OnChatClickListener listener;
 
-    public ChatAdapter(List<Chat> chatList, Context context) {
+    public ChatAdapter(List<Chat> chatList, Context context, OnChatClickListener listener) {
         this.chatList = chatList;
         this.context = context;
+        this.listener = listener;
     }
 
     @NonNull
     @Override
     public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_chat, parent, false); // Inflate your chat item layout
+        View view = LayoutInflater.from(context).inflate(R.layout.item_chat, parent, false);
         return new ChatViewHolder(view);
     }
+
 
     @Override
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
@@ -47,6 +56,20 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         } else {
             holder.profileImageView.setImageResource(R.drawable.person);
         }
+
+        // Set an onClickListener for the item
+        holder.itemView.setOnClickListener(v -> {
+            // Pass the contact name to the MessageFragment
+            MessageFragment messageFragment = MessageFragment.newInstance(chat.getSender());
+
+            // Navigate to the MessageFragment
+            if (context instanceof FragmentActivity) {
+                ((FragmentActivity) context).getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, messageFragment)
+                        .addToBackStack(null)
+                        .commitAllowingStateLoss();
+            }
+        });
     }
 
     @Override
@@ -56,14 +79,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
 
     public static class ChatViewHolder extends RecyclerView.ViewHolder {
         TextView senderTextView, messageTextView, timestampTextView;
-        ImageView profileImageView; // ImageView for the profile picture
+        ImageView profileImageView;
 
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
             senderTextView = itemView.findViewById(R.id.sender);
             messageTextView = itemView.findViewById(R.id.message);
             timestampTextView = itemView.findViewById(R.id.timestamp);
-            profileImageView = itemView.findViewById(R.id.profile_image); // Adjust the ID as needed
+            profileImageView = itemView.findViewById(R.id.profile_image);
         }
     }
 }

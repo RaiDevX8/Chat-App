@@ -1,17 +1,15 @@
 package com.example.chatapp;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-
 import com.example.chatapp.fragments.ChatFragment;
 import com.example.chatapp.fragments.ContactsFragment;
+import com.example.chatapp.fragments.MessageFragment;
 import com.example.chatapp.fragments.SettingsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,42 +22,55 @@ public class MainActivity extends AppCompatActivity {
 
         headerText = findViewById(R.id.header_text);
 
-        // Default fragment when opening the app
+        // Load ChatFragment by default
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new ChatFragment())
-                    .commit();
+            loadFragment(new ChatFragment());
         }
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
     }
 
+    // Bottom navigation listener using if-else
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
-            new BottomNavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(@NonNull android.view.MenuItem item) {
-                    Fragment selectedFragment = null;
+            item -> {
+                Fragment selectedFragment = null;
 
-                    // Use if-else instead of switch-case
-                    if (item.getItemId() == R.id.nav_chats) {
-                        selectedFragment = new ChatFragment();
-                        headerText.setText("Chats"); // Update header
-                    } else if (item.getItemId() == R.id.nav_contacts) {
-                        selectedFragment = new ContactsFragment();
-                        headerText.setText("Contacts"); // Update header
-                    } else if (item.getItemId() == R.id.nav_settings) {
-                        selectedFragment = new SettingsFragment();
-                        headerText.setText("Settings"); // Update header
-                    }
+                // Using if-else statements to handle the item selection
+                if (item.getItemId() == R.id.nav_chats) {
+                    selectedFragment = new ChatFragment();
+                    headerText.setText("Chats");
+                } else if (item.getItemId() == R.id.nav_contacts) {
+                    selectedFragment = new ContactsFragment();
+                    headerText.setText("Contacts");
+                } else if (item.getItemId() == R.id.nav_settings) {
+                    selectedFragment = new SettingsFragment();
+                    headerText.setText("Settings");
+                } else if (item.getItemId() == R.id.nav_message) {
+                    String contactName = "Actual Contact Name"; // Replace with actual contact name logic
+                    Bundle args = new Bundle();
+                    args.putString("contactName", contactName);
 
-                    if (selectedFragment != null) {
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment_container, selectedFragment)
-                                .commit();
-                    }
+                    MessageFragment messageFragment = new MessageFragment();
+                    messageFragment.setArguments(args);
+                    selectedFragment = messageFragment;
 
-                    return true;
+                    headerText.setText(contactName); // Set header text to the contact name
                 }
+
+                // Load the selected fragment if it's not null
+                if (selectedFragment != null) {
+                    loadFragment(selectedFragment);
+                    return true; // Indicate that the event was handled
+                }
+
+                return false; // If none match, return false
             };
+
+    // Helper method to load fragments
+    private void loadFragment(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commitAllowingStateLoss(); // Prevent state loss
+    }
 }
