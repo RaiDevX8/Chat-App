@@ -16,4 +16,8 @@
         android:icon="@drawable/more_horiz"
         android:title="Settings" />
 
+    <item
+        android:id="@+id/nav_message"
+        android:icon="@drawable/chat"
+    android:title="Messages" />
 </menu>

@@ -9,6 +9,11 @@ public class Contact {
     private String timestamp; // Time of the last message
     private int unreadCount; // Unread message count
 
+ public Contact(String name, String phoneNumber, String photoUri) {
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.photoUri = photoUri;
+    }
     // Constructor for using photo resource
     public Contact(String name, String phoneNumber, int photoResource, String lastMessage, String timestamp, int unreadCount) {
         this.name = name;

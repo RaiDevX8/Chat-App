@@ -7,17 +7,21 @@
     <SearchView
         android:id="@+id/search_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone"/> <!-- Hide it by default -->
+        android:visibility="gone"
+        style="?android:attr/progressBarStyleLarge"
+    android:indeterminate="true" /> <!-- Set to true for an indeterminate loading style -->
 
     <ListView
         android:id="@+id/list_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp" /> <!-- Add some margin for better spacing -->
+
 </LinearLayout>
