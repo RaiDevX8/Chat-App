@@ -50,7 +50,12 @@ public class ContactsFragment extends Fragment {
 
         listView.setOnItemClickListener((parent, view1, position, id) -> {
             Contact selectedContact = contactList.get(position);
-            MessageFragment messageFragment = MessageFragment.newInstance(selectedContact.getName());
+
+            // Pass both the contact name and phone number to the MessageFragment
+            MessageFragment messageFragment = MessageFragment.newInstance(
+                    selectedContact.getName(),
+                    selectedContact.getPhoneNumber());
+
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, messageFragment)
                     .addToBackStack(null)

@@ -41,7 +41,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         return new ChatViewHolder(view);
     }
 
-
     @Override
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         Chat chat = chatList.get(position);
@@ -58,18 +57,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         }
 
         // Set an onClickListener for the item
-        holder.itemView.setOnClickListener(v -> {
-            // Pass the contact name to the MessageFragment
-            MessageFragment messageFragment = MessageFragment.newInstance(chat.getSender());
-
-            // Navigate to the MessageFragment
-            if (context instanceof FragmentActivity) {
-                ((FragmentActivity) context).getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, messageFragment)
-                        .addToBackStack(null)
-                        .commitAllowingStateLoss();
-            }
-        });
+        holder.itemView.setOnClickListener(v -> listener.onChatClick(chat)); // Pass the chat object to the listener
     }
 
     @Override

@@ -11,34 +11,34 @@ import android.widget.TextView;
 import com.example.chatapp.R;
 
 public class MessageFragment extends Fragment {
+    private static final String ARG_CONTACT_NAME = "contact_name";
+    private static final String ARG_PHONE_NUMBER = "phone_number";
 
-    private static final String ARG_CONTACT_NAME = "contactName";
-
-    public static MessageFragment newInstance(String contactName) {
+    public static MessageFragment newInstance(String contactName, String phoneNumber) {
         MessageFragment fragment = new MessageFragment();
         Bundle args = new Bundle();
         args.putString(ARG_CONTACT_NAME, contactName);
+        args.putString(ARG_PHONE_NUMBER, phoneNumber);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // Retrieve the contact name from the arguments
-        if (getArguments() != null) {
-            String contactName = getArguments().getString(ARG_CONTACT_NAME);
-        }
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_message, container, false);
-        TextView contactNameTextView = view.findViewById(R.id.contact_name);
 
-        // Display the contact name in the fragment's UI
-        contactNameTextView.setText(getArguments().getString(ARG_CONTACT_NAME));
+        // Retrieve the contact name and phone number from arguments
+        if (getArguments() != null) {
+            String contactName = getArguments().getString(ARG_CONTACT_NAME);
+            String phoneNumber = getArguments().getString(ARG_PHONE_NUMBER);
+
+            TextView contactNameTextView = view.findViewById(R.id.contact_name);
+            TextView phoneNumberTextView = view.findViewById(R.id.phone_number);
+
+            contactNameTextView.setText(contactName);
+            phoneNumberTextView.setText(phoneNumber);
+        }
 
         return view;
     }
