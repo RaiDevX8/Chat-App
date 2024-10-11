@@ -18,4 +18,10 @@
 
     <!-- Accent Colors -->
     <color name="teal">#03DAC5</color> <!-- Teal Color -->
+
+
+    <color name="my_primary">#FF5964</color>
+    <color name="my_secondary">#FFE74C</color>
+    <color name="off_white">#FDFDFD</color>
+
 </resources>
