@@ -23,9 +23,16 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
         </activity>
+
+
+        <activity android:name=".activity.loginphone" />
+        <activity android:name=".activity.LoginotpActivity" />
+        <activity android:name=".main_chat_app" />
+        <activity android:name=".activity.Userprofile"/>
+
     </application>
 
 </manifest>
