@@ -18,6 +18,8 @@ import androidx.fragment.app.Fragment;
 import com.example.chatapp.Adapters.ContactsListAdapter;
 import com.example.chatapp.R;
 import com.example.chatapp.models.Contact;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,7 @@ public class ContactsFragment extends Fragment {
     private List<Contact> contactList;
     private ProgressBar progressBar;
     private SearchView searchView;
+    private FirebaseFirestore db;
 
     @Nullable
     @Override
@@ -41,11 +44,13 @@ public class ContactsFragment extends Fragment {
         searchView = view.findViewById(R.id.search_view);
         contactList = new ArrayList<>();
 
+        db = FirebaseFirestore.getInstance(); // Initialize FirebaseFirestore
+
         // Check permissions and fetch contacts
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_CONTACTS_PERMISSION);
         } else {
-            fetchContacts(); // Fetch contacts in a separate thread
+            fetchAndMatchContacts(); // Fetch and match contacts with Firebase users
         }
 
         listView.setOnItemClickListener((parent, view1, position, id) -> {
@@ -78,59 +83,81 @@ public class ContactsFragment extends Fragment {
         return view;
     }
 
-    private void fetchContacts() {
-        progressBar.setVisibility(View.VISIBLE); // Show the progress bar
-        new Thread(() -> {
-            Cursor cursor = null;
-            try {
-                cursor = requireContext().getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-                if (cursor != null && cursor.getCount() > 0) {
-                    while (cursor.moveToNext()) {
-                        String id = getColumnValue(cursor, ContactsContract.Contacts._ID);
-                        String name = getColumnValue(cursor, ContactsContract.Contacts.DISPLAY_NAME);
-                        String photoUri = getColumnValue(cursor, ContactsContract.Contacts.PHOTO_URI);
-
-                        // Fetch phone numbers for the contact
-                        Cursor phones = requireContext().getContentResolver().query(
-                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                                null,
-                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                                new String[]{id},
-                                null);
-
-                        if (phones != null) {
-                            while (phones.moveToNext()) {
-                                String phoneNumber = getColumnValue(phones, ContactsContract.CommonDataKinds.Phone.NUMBER);
-                                if (phoneNumber != null) {
-                                    contactList.add(new Contact(name, phoneNumber, photoUri));
-                                }
-                            }
-                            phones.close(); // Close the phones cursor
-                        }
-                    }
-                }
-                // Update UI on the main thread
-                requireActivity().runOnUiThread(() -> {
-                    contactsListAdapter = new ContactsListAdapter(getContext(), contactList);
-                    listView.setAdapter(contactsListAdapter);
-                    progressBar.setVisibility(View.GONE); // Hide the progress bar after loading
-                });
-            } catch (Exception e) {
-                e.printStackTrace(); // Log any exceptions for debugging
-            } finally {
-                if (cursor != null) {
-                    cursor.close(); // Ensure the cursor is closed
-                }
-            }
-        }).start();
+    // Function to normalize phone numbers by removing non-digit characters and handling country code
+    private String normalizePhoneNumber(String phoneNumber) {
+        String normalizedNumber = phoneNumber.replaceAll("[^\\d]", "");
+        if (normalizedNumber.startsWith("91")) {
+            return normalizedNumber; // Already includes country code
+        } else {
+            return "91" + normalizedNumber; // Add country code for India
+        }
     }
 
-    private String getColumnValue(Cursor cursor, String columnName) {
-        int columnIndex = cursor.getColumnIndex(columnName);
-        if (columnIndex != -1) {
-            return cursor.getString(columnIndex);
-        }
-        return null; // Return null if the column doesn't exist
+    // Fetch contacts from the device and match them with Firestore users
+    private void fetchAndMatchContacts() {
+        progressBar.setVisibility(View.VISIBLE); // Show the progress bar
+
+        // Fetch contacts from device in a background thread
+        new Thread(() -> {
+            List<String> deviceContacts = new ArrayList<>();
+            Cursor cursor = requireContext().getContentResolver().query(
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null);
+
+            if (cursor != null) {
+                int phoneNumberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+
+                while (cursor.moveToNext()) {
+                    if (phoneNumberIndex != -1) {
+                        String phoneNumber = cursor.getString(phoneNumberIndex);
+                        deviceContacts.add(normalizePhoneNumber(phoneNumber));
+                    }
+                }
+                cursor.close(); // Close cursor
+            }
+
+            // Fetch users from Firestore and match them with device contacts
+            db.collection("Users")
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            contactList.clear(); // Clear the list before adding new data
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                String firebasePhoneNumber = document.getString("mobileNumber");
+                                String normalizedFirebaseNumber = normalizePhoneNumber(firebasePhoneNumber);
+
+                                // Check if any device contact matches the Firebase user's number
+                                for (String contactPhoneNumber : deviceContacts) {
+                                    if (normalizedFirebaseNumber.equals(contactPhoneNumber)) {
+                                        String name = document.getString("firstName") + " " + document.getString("lastName");
+                                        contactList.add(new Contact(name, firebasePhoneNumber, null)); // Add contact to list
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Update the UI on the main thread
+                            requireActivity().runOnUiThread(() -> {
+                                contactsListAdapter = new ContactsListAdapter(getContext(), contactList);
+                                listView.setAdapter(contactsListAdapter);
+                                progressBar.setVisibility(View.GONE); // Hide progress bar
+                            });
+                        } else {
+                            requireActivity().runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE); // Hide progress bar on error
+                            });
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        e.printStackTrace();
+                        requireActivity().runOnUiThread(() -> {
+                            progressBar.setVisibility(View.GONE); // Hide progress bar on failure
+                        });
+                    });
+        }).start();
     }
 
     private void filterContacts(String query) {
