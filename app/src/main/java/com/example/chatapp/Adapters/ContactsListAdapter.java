@@ -1,7 +1,7 @@
 package com.example.chatapp.Adapters;
 
 import android.content.Context;
-import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +10,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.chatapp.R;
 import com.example.chatapp.models.Contact;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
@@ -19,10 +22,12 @@ public class ContactsListAdapter extends BaseAdapter {
 
     private List<Contact> contactList;
     private LayoutInflater inflater;
+    private FirebaseStorage storage;
 
     public ContactsListAdapter(Context context, List<Contact> contactList) {
         this.contactList = contactList;
         this.inflater = LayoutInflater.from(context);
+        this.storage = FirebaseStorage.getInstance();
     }
 
     @Override
@@ -43,14 +48,15 @@ public class ContactsListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
+
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.item_contact, parent, false);
             holder = new ViewHolder();
             holder.contactName = convertView.findViewById(R.id.contact_name);
             holder.contactNumber = convertView.findViewById(R.id.contact_number);
             holder.contactPhoto = convertView.findViewById(R.id.contact_photo);
-            holder.unreadCountBadge = convertView.findViewById(R.id.unread_count_badge); // Add badge
-            holder.contactItemLayout = convertView.findViewById(R.id.contact_item_layout); // Layout for background
+            holder.unreadCountBadge = convertView.findViewById(R.id.unread_count_badge);
+            holder.contactItemLayout = convertView.findViewById(R.id.contact_item_layout);
 
             convertView.setTag(holder);
         } else {
@@ -59,19 +65,16 @@ public class ContactsListAdapter extends BaseAdapter {
 
         Contact contact = contactList.get(position);
         holder.contactName.setText(contact.getName());
-        holder.contactNumber.setText(contact.getPhoneNumber()); // Set phone number
+        holder.contactNumber.setText(contact.getPhoneNumber());
 
-        // Load the contact photo if available
-        String photoUriString = contact.getPhotoUri(); // Get photo URI as a String
-        if (photoUriString != null) {
-            Uri photoUri = Uri.parse(photoUriString); // Convert String to Uri
-            holder.contactPhoto.setImageURI(photoUri); // Set the photo URI
+        String userId = contact.getUserId();
+        if (userId != null) {
+            loadProfileImage(holder.contactPhoto, userId);
         } else {
-            holder.contactPhoto.setImageResource(contact.getPhotoResource()); // Use resource ID if URI is null
+            holder.contactPhoto.setImageResource(R.drawable.person); // Default image
         }
 
-        // Show unread message count badge if there are unread messages
-        int unreadCount = contact.getUnreadCount(); // Get unread count
+        int unreadCount = contact.getUnreadCount();
         if (unreadCount > 0) {
             holder.unreadCountBadge.setVisibility(View.VISIBLE);
             holder.unreadCountBadge.setText(String.valueOf(unreadCount));
@@ -79,18 +82,33 @@ public class ContactsListAdapter extends BaseAdapter {
             holder.unreadCountBadge.setVisibility(View.GONE);
         }
 
-        // Set a light gray background for each contact item
-        holder.contactItemLayout.setBackgroundColor(convertView.getContext().getResources().getColor(R.color.light_gray)); // Replace with actual color resource
+        holder.contactItemLayout.setBackgroundColor(convertView.getContext().getResources().getColor(R.color.light_gray));
 
         return convertView;
+    }
+
+    private void loadProfileImage(ImageView imageView, String userId) {
+        StorageReference profileImageRef = storage.getReference().child("ProfileImages/" + userId + ".jpg");
+
+        profileImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+            Log.d("Firebase Image", "Fetched image URI: " + uri.toString());
+            Glide.with(imageView.getContext())
+                    .load(uri)
+                    .placeholder(R.drawable.person) // Default image while loading
+                    .error(R.drawable.person) // Error image if loading fails
+                    .into(imageView);
+        }).addOnFailureListener(e -> {
+            Log.e("Firebase Image", "Error fetching image: ", e);
+            imageView.setImageResource(R.drawable.person); // Set default image on error
+        });
     }
 
     static class ViewHolder {
         TextView contactName;
         TextView contactNumber;
         ImageView contactPhoto;
-        TextView unreadCountBadge; // Add unread count badge
-        RelativeLayout contactItemLayout; // Layout for setting background
+        TextView unreadCountBadge;
+        RelativeLayout contactItemLayout;
     }
 
     public void updateContacts(List<Contact> updatedContactList) {

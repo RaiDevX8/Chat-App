@@ -8,7 +8,7 @@ public class Contact {
     private String lastMessage; // Last message preview
     private String timestamp; // Time of the last message
     private int unreadCount; // Unread message count
-
+    private String userId;
  public Contact(String name, String phoneNumber, String photoUri) {
         this.name = name;
         this.phoneNumber = phoneNumber;
@@ -63,5 +63,9 @@ public class Contact {
 
     public int getUnreadCount() {
         return unreadCount;
+    }
+    public String getUserId() {
+
+        return userId;
     }
 }

@@ -41,8 +41,9 @@ public class ChatFragment extends Fragment {
         chatAdapter = new ChatAdapter(filteredChatList, getActivity(), chat -> {
             String contactName = chat.getSender();
             String phoneNumber = chat.getPhoneNumber(); // Assuming getPhoneNumber() is in your Chat model
-            MessageFragment messageFragment = MessageFragment.newInstance(contactName, phoneNumber);
-            navigateToMessageFragment(messageFragment);
+
+//            MessageFragment messageFragment = MessageFragment.newInstance(contactName, phoneNumber);
+//            navigateToMessageFragment(messageFragment);
         });
 
         recyclerView.setAdapter(chatAdapter);

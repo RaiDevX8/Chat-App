@@ -1,37 +1,35 @@
 package com.example.chatapp.models;
 
 public class Message {
-    private String body;
-    private String time;
-    private boolean isSent;
-    private String senderName;
-    private int profileImageResource;
+    private String senderId;
+    private String receiverId;
+    private String messageText;
+    private long timestamp;
 
-    public Message(String body, String time, boolean isSent, String senderName, int profileImageResource) {
-        this.body = body;
-        this.time = time;
-        this.isSent = isSent;
-        this.senderName = senderName;
-        this.profileImageResource = profileImageResource;
+    public Message() {
+        // Empty constructor required for Firestore
     }
 
-    public String getBody() {
-        return body;
+    public Message(String senderId, String receiverId, String messageText, long timestamp) {
+        this.senderId = senderId;
+        this.receiverId = receiverId;
+        this.messageText = messageText;
+        this.timestamp = timestamp;
     }
 
-    public String getTime() {
-        return time;
+    public String getSenderId() {
+        return senderId;
     }
 
-    public boolean isSent() {
-        return isSent;
+    public String getReceiverId() {
+        return receiverId;
     }
 
-    public String getSenderName() {
-        return senderName;
+    public String getMessageText() {
+        return messageText;
     }
 
-    public int getProfileImageResource() {
-        return profileImageResource;
+    public long getTimestamp() {
+        return timestamp;
     }
 }

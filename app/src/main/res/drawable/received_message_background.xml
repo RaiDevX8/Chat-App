@@ -1,9 +1,4 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#f1f0f0" /> <!-- Received message bubble color -->
+    <solid android:color="#ECECEC"/> <!-- Gray color for received messages -->
     <corners android:radius="16dp" />
-    <padding
-        android:left="12dp"
-        android:top="8dp"
-        android:right="12dp"
-        android:bottom="8dp" />
 </shape>

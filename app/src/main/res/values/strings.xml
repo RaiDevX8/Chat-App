@@ -2,4 +2,7 @@
     <string name="app_name">Chat App</string>
     <string name="contact_photo_desc">Contact photo</string> <!-- Add this line -->
     <string name="profile_image">Profile Image</string>
+    <string name="contact_profile_image">contact_profile_image</string>
+    <color name="background_color">#F5F5F5</color> <!-- Light background color -->
+    <color name="message_background">#E1FFC7</color>
 </resources>

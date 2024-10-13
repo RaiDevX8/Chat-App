@@ -46,9 +46,11 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
 
+    implementation("com.github.bumptech.glide:glide:4.16.0")
     // Other dependencies
     implementation("com.hbb20:ccp:2.5.0")
-    implementation(libs.firebase.database) // Check if this is updated
+    implementation(libs.firebase.database)
+    implementation(libs.recyclerview) // Check if this is updated
 
     // Testing
     testImplementation("junit:junit:4.13.2")
