@@ -1,16 +1,20 @@
 package com.example.chatapp.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide; // Import Glide
 import com.example.chatapp.Adapters.MessageAdapter;
 import com.example.chatapp.R;
 import com.example.chatapp.models.Message;
@@ -18,6 +22,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,6 +44,8 @@ public class MessageFragment extends Fragment {
     private FirebaseFirestore db;
     private ListenerRegistration listenerRegistrationSender;
     private ListenerRegistration listenerRegistrationReceiver;
+    private ImageView imageViewProfile;
+    private TextView textViewContactName;
 
     public static MessageFragment newInstance(String contactName, String receiverId) {
         MessageFragment fragment = new MessageFragment();
@@ -60,6 +69,14 @@ public class MessageFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recycler_view);
         editTextMessage = view.findViewById(R.id.edit_text_message);
         buttonSend = view.findViewById(R.id.button_send);
+        imageViewProfile = view.findViewById(R.id.image_view_contact_profile); // Add this line
+        textViewContactName = view.findViewById(R.id.text_view_contact_name); // Add this line
+
+        // Set contact name
+        textViewContactName.setText(contactName);
+
+        // Load contact's profile image
+        loadContactProfileImage(receiverId);
 
         messageList = new ArrayList<>();
         messageAdapter = new MessageAdapter(messageList);
@@ -74,6 +91,21 @@ public class MessageFragment extends Fragment {
         buttonSend.setOnClickListener(v -> sendMessage());
 
         return view;
+    }
+
+    private void loadContactProfileImage(String userId) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference().child("ProfileImages/" + userId + ".jpg");
+
+        storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+            Glide.with(imageViewProfile.getContext())
+                    .load(uri)
+                    .placeholder(R.drawable.person) // Placeholder image
+                    .into(imageViewProfile);
+        }).addOnFailureListener(e -> {
+            // Handle the error
+            Log.e("MessageFragment", "Failed to load profile image: " + e.getMessage());
+        });
     }
 
     private void loadMessages() {
