@@ -34,7 +34,7 @@
         <!-- Other Activities -->
         <activity android:name=".activity.loginphone" />
         <activity android:name=".activity.LoginotpActivity" />
-        <activity android:name=".main_chat_app" />
+        <activity android:name=".activity.main_chat_app" />
         <activity android:name=".activity.Userprofile"/>
 
     </application>

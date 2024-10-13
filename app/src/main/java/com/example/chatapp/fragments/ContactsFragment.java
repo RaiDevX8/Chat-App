@@ -56,15 +56,8 @@ public class ContactsFragment extends Fragment {
         listView.setOnItemClickListener((parent, view1, position, id) -> {
             Contact selectedContact = contactList.get(position);
 
-            // Pass both the contact name and phone number to the MessageFragment
-            MessageFragment messageFragment = MessageFragment.newInstance(
-                    selectedContact.getName(),
-                    selectedContact.getPhoneNumber());
-
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, messageFragment)
-                    .addToBackStack(null)
-                    .commit();
+            // Fetch receiver's UserId from Firestore based on the selected contact's phone number
+            fetchReceiverUserId(selectedContact.getPhoneNumber(), selectedContact.getName());
         });
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -158,6 +151,28 @@ public class ContactsFragment extends Fragment {
                         });
                     });
         }).start();
+    }
+
+    // Fetch receiver's UserId based on the selected contact's phone number
+    private void fetchReceiverUserId(String phoneNumber, String contactName) {
+        db.collection("Users")
+                .whereEqualTo("mobileNumber", phoneNumber)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                        String receiverId = task.getResult().getDocuments().get(0).getId(); // Get UserId from the first matched document
+
+                        // Now pass both the contact name and receiverId to the MessageFragment
+                        MessageFragment messageFragment = MessageFragment.newInstance(contactName, receiverId);
+                        getParentFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, messageFragment)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    e.printStackTrace();
+                });
     }
 
     private void filterContacts(String query) {

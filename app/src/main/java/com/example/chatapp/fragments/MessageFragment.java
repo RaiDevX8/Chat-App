@@ -1,42 +1,48 @@
 package com.example.chatapp.fragments;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.EditText;
-import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.chatapp.Adapters.MessageAdapter;
 import com.example.chatapp.R;
 import com.example.chatapp.models.Message;
-import java.text.SimpleDateFormat;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 public class MessageFragment extends Fragment {
+    private static final String ARG_RECEIVER_ID = "receiver_id";
     private static final String ARG_CONTACT_NAME = "contact_name";
-    private static final String ARG_PHONE_NUMBER = "phone_number";
 
+    private String receiverId;
+    private String contactName;
     private RecyclerView recyclerView;
+    private EditText editTextMessage;
+    private ImageButton buttonSend;
     private MessageAdapter messageAdapter;
     private List<Message> messageList;
-    private EditText inputMessage;
-    private ImageButton sendButton;
+    private FirebaseFirestore db;
+    private ListenerRegistration listenerRegistrationSender;
+    private ListenerRegistration listenerRegistrationReceiver;
 
-    // Static method to create a new instance with arguments
-    public static MessageFragment newInstance(String contactName, String phoneNumber) {
+    public static MessageFragment newInstance(String contactName, String receiverId) {
         MessageFragment fragment = new MessageFragment();
         Bundle args = new Bundle();
+        args.putString(ARG_RECEIVER_ID, receiverId);
         args.putString(ARG_CONTACT_NAME, contactName);
-        args.putString(ARG_PHONE_NUMBER, phoneNumber);
         fragment.setArguments(args);
         return fragment;
     }
@@ -46,75 +52,98 @@ public class MessageFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_message, container, false);
 
-        // Initialize views
-        recyclerView = view.findViewById(R.id.chat_recycler_view);
-        inputMessage = view.findViewById(R.id.input_message);
-        sendButton = view.findViewById(R.id.send_button);
-
-        // Initialize message list and adapter
-        messageList = new ArrayList<>();
-        messageAdapter = new MessageAdapter(messageList);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(messageAdapter);
-
-        // Retrieve the contact name and phone number from arguments and handle null values
         if (getArguments() != null) {
-            String contactName = getArguments().getString(ARG_CONTACT_NAME, "Unknown");
-            String phoneNumber = getArguments().getString(ARG_PHONE_NUMBER, "Unknown");
-
-            TextView contactNameTextView = view.findViewById(R.id.contact_name);
-            TextView phoneNumberTextView = view.findViewById(R.id.phone_number);
-
-            contactNameTextView.setText(contactName);
-            phoneNumberTextView.setText(phoneNumber);
+            receiverId = getArguments().getString(ARG_RECEIVER_ID);
+            contactName = getArguments().getString(ARG_CONTACT_NAME);
         }
 
-        // Set up send button click listener
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String messageText = inputMessage.getText().toString().trim();
-                if (!messageText.isEmpty()) {
-                    sendMessage(messageText);  // Send the message
-                    inputMessage.setText("");  // Clear input field
-                }
-            }
-        });
+        recyclerView = view.findViewById(R.id.recycler_view);
+        editTextMessage = view.findViewById(R.id.edit_text_message);
+        buttonSend = view.findViewById(R.id.button_send);
+
+        messageList = new ArrayList<>();
+        messageAdapter = new MessageAdapter(messageList);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(messageAdapter);
+
+        db = FirebaseFirestore.getInstance();
+        loadMessages(); // Load messages in real-time
+
+        buttonSend.setOnClickListener(v -> sendMessage());
 
         return view;
     }
 
-    // Method to send a message
-    private void sendMessage(String messageText) {
-        // Get current time
-        String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+    private void loadMessages() {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Get current user ID
 
-        // Create a new Message object for the sent message
-        Message sentMessage = new Message(messageText, currentTime, true, "You", R.drawable.person);
+        // Listen for messages sent by the current user to the receiver
+        listenerRegistrationSender = db.collection("Messages")
+                .whereEqualTo("senderId", currentUserId)
+                .whereEqualTo("receiverId", receiverId)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        return;
+                    }
+                    if (value != null) {
+                        List<Message> newMessages = new ArrayList<>();
+                        for (DocumentSnapshot doc : value.getDocuments()) {
+                            Message message = doc.toObject(Message.class);
+                            newMessages.add(message);
+                        }
+                        messageList.addAll(newMessages); // Add new messages to the list
+                        sortAndNotify();
+                    }
+                });
 
-        // Add sent message to the list and notify the adapter
-        messageList.add(sentMessage);
-        messageAdapter.notifyItemInserted(messageList.size() - 1);
-
-        // Simulate a received message after sending
-        receiveMessage("Okay, got your message!");
-
-        // Scroll to the latest message
-        recyclerView.scrollToPosition(messageList.size() - 1);
+        // Listen for messages sent by the receiver to the current user
+        listenerRegistrationReceiver = db.collection("Messages")
+                .whereEqualTo("senderId", receiverId)
+                .whereEqualTo("receiverId", currentUserId)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        return;
+                    }
+                    if (value != null) {
+                        List<Message> newMessages = new ArrayList<>();
+                        for (DocumentSnapshot doc : value.getDocuments()) {
+                            Message message = doc.toObject(Message.class);
+                            newMessages.add(message);
+                        }
+                        messageList.addAll(newMessages); // Add new messages to the list
+                        sortAndNotify();
+                    }
+                });
     }
 
-    // Simulate receiving a message
-    private void receiveMessage(String messageText) {
-        String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+    private void sortAndNotify() {
+        // Sort messages by timestamp (ascending order)
+        Collections.sort(messageList, Comparator.comparingLong(Message::getTimestamp));
+        messageAdapter.notifyDataSetChanged(); // Notify adapter of changes
+        recyclerView.scrollToPosition(messageList.size() - 1); // Scroll to the bottom (newest message)
+    }
 
-        // Create a new Message object for the received message
-        Message receivedMessage = new Message(messageText, currentTime, false, "John", R.drawable.person);
+    private void sendMessage() {
+        String messageText = editTextMessage.getText().toString().trim();
+        if (!messageText.isEmpty()) {
+            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Get current user ID
+            Message message = new Message(currentUserId, receiverId, messageText, System.currentTimeMillis());
+            db.collection("Messages").add(message).addOnSuccessListener(aVoid -> {
+                editTextMessage.setText(""); // Clear the input
+            });
+        }
+    }
 
-        // Add received message to the list and notify the adapter
-        messageList.add(receivedMessage);
-        messageAdapter.notifyItemInserted(messageList.size() - 1);
-
-        // Scroll to the latest message
-        recyclerView.scrollToPosition(messageList.size() - 1);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (listenerRegistrationSender != null) {
+            listenerRegistrationSender.remove(); // Remove the sender listener
+        }
+        if (listenerRegistrationReceiver != null) {
+            listenerRegistrationReceiver.remove(); // Remove the receiver listener
+        }
     }
 }

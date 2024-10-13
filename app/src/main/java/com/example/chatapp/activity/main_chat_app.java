@@ -1,9 +1,11 @@
-package com.example.chatapp;
+package com.example.chatapp.activity;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+
+import com.example.chatapp.R;
 import com.example.chatapp.fragments.ChatFragment;
 import com.example.chatapp.fragments.ContactsFragment;
 import com.example.chatapp.fragments.MessageFragment;
