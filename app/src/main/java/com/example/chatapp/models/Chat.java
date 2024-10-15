@@ -3,24 +3,26 @@ package com.example.chatapp.models;
 public class Chat {
     private String sender;
     private String message;
-    private String timestamp;
+    private Long timestamp; // Change to Long
     private String profilePicUri; // URI for profile picture
     private String phoneNumber; // Add phone number field
 
+    public Chat() {}
+
     // Constructor for using URI
-    public Chat(String sender, String message, String timestamp, String profilePicUri, String phoneNumber) {
+    public Chat(String sender, String message, Long timestamp, String profilePicUri, String phoneNumber) {
         this.sender = sender;
         this.message = message;
-        this.timestamp = timestamp;
+        this.timestamp = timestamp; // Assign Long
         this.profilePicUri = profilePicUri; // Assign URI
         this.phoneNumber = phoneNumber; // Assign phone number
     }
 
     // Constructor for using drawable resource ID (optional)
-    public Chat(String sender, String message, String timestamp, int profilePicResId, String phoneNumber) {
+    public Chat(String sender, String message, Long timestamp, int profilePicResId, String phoneNumber) {
         this.sender = sender;
         this.message = message;
-        this.timestamp = timestamp;
+        this.timestamp = timestamp; // Assign Long
         this.profilePicUri = null; // No URI, set to null
         this.phoneNumber = phoneNumber; // Assign phone number
     }
@@ -34,8 +36,8 @@ public class Chat {
         return message;
     }
 
-    public String getTimestamp() {
-        return timestamp;
+    public Long getTimestamp() {
+        return timestamp; // Return Long
     }
 
     public String getProfilePicUri() {
