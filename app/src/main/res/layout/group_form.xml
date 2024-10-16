@@ -1,0 +1,112 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <!-- Image Section for Group Image -->
+    <ImageView
+        android:id="@+id/imageViewGroup"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/group"
+        android:contentDescription="Group Image"
+        android:layout_gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:scaleType="centerCrop"
+        android:padding="4dp" />
+
+    <!-- Text below the Image to Add an Image -->
+    <TextView
+        android:id="@+id/tvAddImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ADD IMAGE"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_gravity="center"
+        android:paddingTop="8dp" />
+
+    <!-- Group Name Input Field -->
+    <EditText
+        android:id="@+id/etGroupName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginTop="16dp"
+        android:inputType="text"
+        android:drawableStart="@android:drawable/ic_menu_edit"
+        android:drawablePadding="8dp"
+        android:textColor="@color/black"
+        android:hint="Group Name" />
+
+    <!-- Group Description Input Field -->
+    <EditText
+        android:id="@+id/etGroupDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Description"
+        android:padding="10dp"
+        android:layout_marginTop="8dp"
+        android:inputType="textMultiLine"
+        android:drawableStart="@android:drawable/ic_menu_info_details"
+        android:drawablePadding="8dp"
+        android:textColor="@color/black" />
+
+    <!-- Search Bar Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:layout_marginTop="16dp">
+
+        <!-- Search Icon -->
+        <ImageView
+            android:id="@+id/ivSearchIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@android:drawable/ic_menu_search"
+            android:contentDescription="Search Icon"
+            android:layout_gravity="center_vertical"
+            app:tint="@android:color/darker_gray" />
+
+        <!-- Search Members Input Field -->
+        <EditText
+            android:id="@+id/etSearchMembers"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Search for Members"
+            android:padding="10dp"
+            android:inputType="text"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <!-- ListView for Members -->
+    <ListView
+        android:id="@+id/lvMembers"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp" />
+
+    <!-- Create Group Button -->
+    <Button
+        android:id="@+id/buttonCreateGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create Group"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@android:color/black"
+        android:textColor="@android:color/white"
+        android:padding="12dp"
+        android:fontFamily="sans-serif-medium"/>
+
+</LinearLayout>
