@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.chatapp.R;
-import com.example.chatapp.fragments.ChatFragment;
+import com.example.chatapp.fragments.ChatListFragment;
 import com.example.chatapp.fragments.ContactsFragment;
 import com.example.chatapp.fragments.MessageFragment;
 import com.example.chatapp.fragments.SettingsFragment;
@@ -26,7 +26,7 @@ public class main_chat_app extends AppCompatActivity {
 
         // Load ChatFragment by default
         if (savedInstanceState == null) {
-            loadFragment(new ChatFragment());
+            loadFragment(new ChatListFragment());
         }
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
@@ -40,7 +40,7 @@ public class main_chat_app extends AppCompatActivity {
 
                 // Using if-else statements to handle the item selection
                 if (item.getItemId() == R.id.nav_chats) {
-                    selectedFragment = new ChatFragment();
+                    selectedFragment = new ChatListFragment();
                     headerText.setText("Chats");
                 } else if (item.getItemId() == R.id.nav_contacts) {
                     selectedFragment = new ContactsFragment();
