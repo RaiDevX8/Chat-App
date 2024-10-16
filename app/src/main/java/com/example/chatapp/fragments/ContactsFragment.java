@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.example.chatapp.Adapters.ContactsListAdapter;
 import com.example.chatapp.R;
 import com.example.chatapp.models.Contact;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -162,8 +163,11 @@ public class ContactsFragment extends Fragment {
                     if (task.isSuccessful() && !task.getResult().isEmpty()) {
                         String receiverId = task.getResult().getDocuments().get(0).getId(); // Get UserId from the first matched document
 
-                        // Now pass both the contact name and receiverId to the MessageFragment
-                        MessageFragment messageFragment = MessageFragment.newInstance(contactName, receiverId);
+                        // Get the current user's ID (from Firebase Authentication)
+                        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Replace this with your actual method of getting the current user ID
+
+                        // Now pass contact name, receiverId, and currentUserId to the MessageFragment
+                        MessageFragment messageFragment = MessageFragment.newInstance(contactName, receiverId, currentUserId);
                         getParentFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, messageFragment)
                                 .addToBackStack(null)

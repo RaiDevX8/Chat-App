@@ -3,26 +3,22 @@ package com.example.chatapp.models;
 public class Chat {
     private String sender;
     private String message;
-    private String timestamp;
-    private String profilePicUri; // URI for profile picture
-    private String phoneNumber; // Add phone number field
+    private Long timestamp; // Change to Long (object type)
+    private int profileImage; // Replace with the appropriate data type for the profile image if needed
+    private String receiverId; // Add this field
+    private String phoneNumber; // Add this field for the phone number
 
-    // Constructor for using URI
-    public Chat(String sender, String message, String timestamp, String profilePicUri, String phoneNumber) {
+        public Chat()
+        {}
+
+    // Constructor
+    public Chat(String sender, String message, Long timestamp, int profileImage, String receiverId, String phoneNumber) {
         this.sender = sender;
         this.message = message;
-        this.timestamp = timestamp;
-        this.profilePicUri = profilePicUri; // Assign URI
-        this.phoneNumber = phoneNumber; // Assign phone number
-    }
-
-    // Constructor for using drawable resource ID (optional)
-    public Chat(String sender, String message, String timestamp, int profilePicResId, String phoneNumber) {
-        this.sender = sender;
-        this.message = message;
-        this.timestamp = timestamp;
-        this.profilePicUri = null; // No URI, set to null
-        this.phoneNumber = phoneNumber; // Assign phone number
+        this.timestamp = timestamp; // Initialize timestamp
+        this.profileImage = profileImage;
+        this.receiverId = receiverId; // Initialize receiverId
+        this.phoneNumber = phoneNumber; // Initialize phoneNumber
     }
 
     // Getters
@@ -34,15 +30,19 @@ public class Chat {
         return message;
     }
 
-    public String getTimestamp() {
+    public Long getTimestamp() { // Change return type to Long
         return timestamp;
     }
 
-    public String getProfilePicUri() {
-        return profilePicUri; // URI getter
+    public int getProfileImage() {
+        return profileImage;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber; // Phone number getter
+    public String getReceiverId() {
+        return receiverId; // Add this getter
+    }
+
+    public String getPhoneNumber() { // Add this getter
+        return phoneNumber;
     }
 }
