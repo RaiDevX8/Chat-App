@@ -10,14 +10,15 @@
         android:id="@+id/nav_chats"
         android:icon="@drawable/chat"
         android:title="Chats" />
+    <item
+        android:id="@+id/nav_groupchats"
+        android:icon="@drawable/groupchat"
+        android:title="Group Chats" />
 
     <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/more_horiz"
         android:title="Settings" />
 
-    <item
-        android:id="@+id/nav_message"
-        android:icon="@drawable/chat"
-    android:title="Messages" />
+
 </menu>
