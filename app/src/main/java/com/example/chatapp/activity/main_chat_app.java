@@ -1,5 +1,6 @@
 package com.example.chatapp.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,9 +9,13 @@ import androidx.fragment.app.Fragment;
 import com.example.chatapp.R;
 import com.example.chatapp.fragments.ChatListFragment;
 import com.example.chatapp.fragments.ContactsFragment;
+import com.example.chatapp.fragments.CreateGroupFragment;
+import com.example.chatapp.fragments.GroupChatFragment;
 import com.example.chatapp.fragments.MessageFragment;
 import com.example.chatapp.fragments.SettingsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import android.util.Log;
 import android.widget.TextView;
 
 public class main_chat_app extends AppCompatActivity {
@@ -31,14 +36,14 @@ public class main_chat_app extends AppCompatActivity {
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
+        bottomNav.setSelectedItemId(R.id.nav_chats);
+
     }
 
-    // Bottom navigation listener using if-else
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
             item -> {
                 Fragment selectedFragment = null;
 
-                // Using if-else statements to handle the item selection
                 if (item.getItemId() == R.id.nav_chats) {
                     selectedFragment = new ChatListFragment();
                     headerText.setText("Chats");
@@ -48,26 +53,21 @@ public class main_chat_app extends AppCompatActivity {
                 } else if (item.getItemId() == R.id.nav_settings) {
                     selectedFragment = new SettingsFragment();
                     headerText.setText("Settings");
-                } else if (item.getItemId() == R.id.nav_message) {
-                    String contactName = "Actual Contact Name"; // Replace with actual contact name logic
-                    Bundle args = new Bundle();
-                    args.putString("contactName", contactName);
-
-                    MessageFragment messageFragment = new MessageFragment();
-                    messageFragment.setArguments(args);
-                    selectedFragment = messageFragment;
-
-                    headerText.setText(contactName); // Set header text to the contact name
+                }  else if (item.getItemId() == R.id.nav_groupchats) {
+                    selectedFragment = new GroupChatFragment();
                 }
 
-                // Load the selected fragment if it's not null
+                // Log the selected fragment
+                Log.d("MainChatApp", "Selected Fragment: " + selectedFragment);
+
                 if (selectedFragment != null) {
                     loadFragment(selectedFragment);
-                    return true; // Indicate that the event was handled
+                    return true;
                 }
 
-                return false; // If none match, return false
+                return false;
             };
+
 
     // Helper method to load fragments
     private void loadFragment(Fragment fragment) {
