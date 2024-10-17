@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chatapp.R;
-import com.example.chatapp.fragments.MessageFragment;
 import com.example.chatapp.models.Contact;
 import com.example.chatapp.models.Group;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,12 +22,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CreateGroupActivity extends AppCompatActivity {
 
@@ -176,20 +172,15 @@ public class CreateGroupActivity extends AppCompatActivity {
                         uploadGroupImage(documentReference.getId());
                     } else {
                         Toast.makeText(this, "Group Created Successfully", Toast.LENGTH_SHORT).show();
-                        redirectToMessageFragment(documentReference.getId(), groupName); // Redirect after successful group creation
+                        redirectToGroupChatFragment(); // Call the updated redirect method
                     }
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to create group", Toast.LENGTH_SHORT).show());
     }
 
-
-    // Method to redirect to the MessageFragment
-    private void redirectToMessageFragment(String groupId, String groupName) {
-        Intent intent = new Intent(CreateGroupActivity.this, MessageFragment.class); // Replace with your MessageActivity
-        intent.putExtra("groupId", groupId); // Pass the group ID
-        intent.putExtra("groupName", groupName); // Pass the group name
-        startActivity(intent); // Start the MessageActivity
-        finish(); // Optional: finish the current activity if you don't want to return to it
+    // New method to redirect back to GroupChatFragment
+    private void redirectToGroupChatFragment() {
+        finish(); // Close this activity to go back to the GroupChatFragment
     }
 
     // Upload the group profile image to Firebase Storage
@@ -201,7 +192,7 @@ public class CreateGroupActivity extends AppCompatActivity {
                             .update("groupImage", uri.toString())
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(this, "Group Created Successfully with Image", Toast.LENGTH_SHORT).show();
-                                finish();
+                                redirectToGroupChatFragment(); // Redirect after successful image upload
                             });
                 }))
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to upload group image", Toast.LENGTH_SHORT).show());
