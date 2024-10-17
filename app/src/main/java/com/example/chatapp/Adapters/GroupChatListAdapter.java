@@ -1,6 +1,7 @@
 package com.example.chatapp.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.R;
+import com.example.chatapp.activity.GroupChatActivity;
 import com.example.chatapp.models.GroupChat;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -44,6 +46,15 @@ public class GroupChatListAdapter extends RecyclerView.Adapter<GroupChatListAdap
 
         // Load the group profile image
         loadGroupProfileImage(groupChat.getGroupId(), holder.groupImageView);
+        // Set click listener to open GroupMessageActivity
+        holder.itemView.setOnClickListener(v -> {
+            // Navigate to GroupChatActivity with group information
+            Intent intent = new Intent(context, GroupChatActivity.class);
+            intent.putExtra("groupId", groupChat.getGroupId());
+            intent.putExtra("groupName", groupChat.getGroupName());
+            context.startActivity(intent);
+        });
+
     }
 
     @Override
