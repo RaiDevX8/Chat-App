@@ -118,8 +118,7 @@ public class GroupMessageFragment extends Fragment {
         }
     }
 
-    // Listen for real-time message updates from Firebase Firestore
-    private void listenForMessages()    {
+    private void listenForMessages() {
         db.collection("Groups").document(groupId)
                 .collection("Messages")
                 .orderBy("timestamp", Query.Direction.ASCENDING)
@@ -136,9 +135,10 @@ public class GroupMessageFragment extends Fragment {
                             String senderId = document.getString("senderId");
                             String messageText = document.getString("message");
                             Timestamp timestamp = document.getTimestamp("timestamp");
+                            String senderProfileImageUrl = document.getString("senderProfileImageUrl"); // Fetch the image URL
 
                             // Create a new GroupMessageModel
-                            GroupMessageModel message = new GroupMessageModel(senderId, messageText, timestamp);
+                            GroupMessageModel message = new GroupMessageModel(senderId, messageText, timestamp, senderProfileImageUrl);
                             messageList.add(message);
                         }
                         adapter.notifyDataSetChanged();
@@ -146,5 +146,6 @@ public class GroupMessageFragment extends Fragment {
                     }
                 });
     }
+
 
 }

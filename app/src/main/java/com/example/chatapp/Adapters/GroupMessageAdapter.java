@@ -1,18 +1,19 @@
 package com.example.chatapp.Adapters;
 
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.chatapp.R;
 import com.example.chatapp.models.GroupMessageModel;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
@@ -37,36 +38,24 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         GroupMessageModel message = messageList.get(position);
         String messageText = message.getMessageText();
+        String senderId = message.getSenderId();
 
-        // Extract timestamp in milliseconds
-        long timestampMillis = message.getTimestamp().toDate().getTime();
+        // Load sender profile image
+        loadProfileImage(holder.profileImageViewSender, senderId); // Load sender image
 
-        // Format the timestamp
-        String formattedTimestamp = formatTimestamp(timestampMillis);
-
-        if (messageText != null && !messageText.isEmpty()) {
-            if (message.getSenderId().equals(currentUserId)) {
-                // Set sender message
-                holder.messageContainerSender.setVisibility(View.VISIBLE);
-                holder.messageContainerReceiver.setVisibility(View.GONE);
-                holder.messageTextViewSender.setText(messageText); // Set text for sender
-                holder.timestampTextViewSender.setText(formattedTimestamp); // Set timestamp
-            } else {
-                // Set receiver message
-                holder.messageContainerSender.setVisibility(View.GONE);
-                holder.messageContainerReceiver.setVisibility(View.VISIBLE);
-                holder.messageTextViewReceiver.setText(messageText); // Set text for receiver
-                holder.timestampTextViewReceiver.setText(formattedTimestamp); // Set timestamp
-            }
+        // Check if the sender is the current user
+        if (senderId.equals(currentUserId)) {
+            // Show sender message layout
+            holder.messageContainerSender.setVisibility(View.VISIBLE);
+            holder.messageContainerReceiver.setVisibility(View.GONE);
+            holder.messageTextViewSender.setText(messageText); // Set text for sender
         } else {
-            holder.messageTextViewSender.setText("No message"); // Placeholder for debugging
-            holder.messageTextViewReceiver.setText("No message"); // Placeholder for debugging
+            // Show receiver message layout
+            holder.messageContainerSender.setVisibility(View.GONE);
+            holder.messageContainerReceiver.setVisibility(View.VISIBLE);
+            holder.messageTextViewReceiver.setText(messageText); // Set text for receiver
+            loadProfileImage(holder.profileImageViewReceiver, senderId); // Load receiver image
         }
-    }
-
-    private String formatTimestamp(long timestamp) {
-        // Format the timestamp to a readable date/time string
-        return DateFormat.format("hh:mm a", timestamp).toString(); // Format as needed
     }
 
     @Override
@@ -75,25 +64,35 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
     }
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
-        TextView messageTextViewSender;
-        TextView messageTextViewReceiver;
-        TextView timestampTextViewSender;
-        TextView timestampTextViewReceiver;
-        LinearLayout messageContainerSender;
-        LinearLayout messageContainerReceiver;
-        ImageView profileImageViewSender; // Optional, if you have a profile image for sender
-        ImageView profileImageViewReceiver; // Optional, if you have a profile image for receiver
+        ImageView profileImageViewSender, profileImageViewReceiver;
+        View messageContainerSender, messageContainerReceiver;
+        TextView messageTextViewSender, messageTextViewReceiver;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
+            profileImageViewSender = itemView.findViewById(R.id.image_view_profile_sender);
+            profileImageViewReceiver = itemView.findViewById(R.id.image_view_profile_receiver);
+            messageContainerSender = itemView.findViewById(R.id.message_container_sender);
+            messageContainerReceiver = itemView.findViewById(R.id.message_container_receiver);
             messageTextViewSender = itemView.findViewById(R.id.text_view_message_sender);
             messageTextViewReceiver = itemView.findViewById(R.id.text_view_message_receiver);
-            timestampTextViewSender = itemView.findViewById(R.id.text_view_timestamp_sender);
-            timestampTextViewReceiver = itemView.findViewById(R.id.text_view_timestamp_receiver);
-            messageContainerSender = itemView.findViewById(R.id.message_container_sender);  // Reference the sender message container
-            messageContainerReceiver = itemView.findViewById(R.id.message_container_receiver);  // Reference the receiver message container
-            profileImageViewSender = itemView.findViewById(R.id.image_view_profile_sender); // Reference sender profile image
-            profileImageViewReceiver = itemView.findViewById(R.id.image_view_profile_receiver); // Reference receiver profile image
         }
+    }
+
+    // Method to load profile image from Firebase Storage
+    private void loadProfileImage(ImageView imageView, String userId) {
+        StorageReference profileImageRef = FirebaseStorage.getInstance().getReference().child("ProfileImages/" + userId + ".jpg");
+
+        profileImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+            Glide.with(imageView.getContext())
+                    .load(uri)
+                    .placeholder(R.drawable.person) // Default image while loading
+                    .circleCrop()
+                    .error(R.drawable.person) // Error image if loading fails
+                    .into(imageView);
+        }).addOnFailureListener(e -> {
+            // Handle the failure
+            imageView.setImageResource(R.drawable.person); // Set a default image
+        });
     }
 }
