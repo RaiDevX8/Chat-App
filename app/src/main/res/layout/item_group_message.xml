@@ -1,27 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/text_view_sender"
-        android:layout_width="wrap_content"
+    <!-- Message Container for Sender -->
+    <LinearLayout
+        android:id="@+id/message_container_sender"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginBottom="4dp">
 
-    <TextView
-        android:id="@+id/text_view_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp" />
+        <!-- Profile Image for Sender -->
+        <ImageView
+            android:id="@+id/image_view_profile_sender"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/person"
+            android:background="@drawable/circular_background"
+            android:contentDescription="@string/profile_image" />
 
-    <TextView
-        android:id="@+id/text_view_timestamp"
-        android:layout_width="wrap_content"
+        <!-- Message Bubble Container -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:background="@drawable/sent_message_background"
+            android:elevation="2dp"
+            android:layout_gravity="end"
+            android:minWidth="120dp">
+
+            <!-- Sender Name (Shown for group messages) -->
+            <TextView
+                android:id="@+id/text_view_sender_name_sender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:text="Sender Name"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone" /> <!-- Initially hidden -->
+
+            <!-- Message Text -->
+            <TextView
+                android:id="@+id/text_view_message_sender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Timestamp -->
+            <TextView
+                android:id="@+id/text_view_timestamp_sender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Message Container for Receiver -->
+    <LinearLayout
+        android:id="@+id/message_container_receiver"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:textSize="12sp"
-        android:textColor="@android:color/darker_gray" />
+        android:orientation="horizontal"
+        android:gravity="start"
+        android:layout_marginBottom="4dp">
+
+        <!-- Profile Image for Receiver -->
+        <ImageView
+            android:id="@+id/image_view_profile_receiver"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/person"
+            android:background="@drawable/circular_background"
+            android:contentDescription="@string/profile_image" />
+
+        <!-- Message Bubble Container -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:background="@drawable/received_message_background"
+            android:elevation="2dp"
+            android:layout_gravity="start"
+            android:minWidth="120dp">
+
+            <!-- Sender Name (Shown for group messages) -->
+            <TextView
+                android:id="@+id/text_view_sender_name_receiver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:text="Sender Name"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone" /> <!-- Initially hidden -->
+
+            <!-- Message Text -->
+            <TextView
+                android:id="@+id/text_view_message_receiver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Timestamp -->
+            <TextView
+                android:id="@+id/text_view_timestamp_receiver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>
