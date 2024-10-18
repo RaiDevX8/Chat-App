@@ -34,6 +34,7 @@ public class CreateGroupActivity extends AppCompatActivity {
     private List<Contact> contactList;
     private ContactsAdapter contactsAdapter;
     private List<String> selectedMembers = new ArrayList<>();
+    private List<String> selectedMemberUserIds = new ArrayList<>(); // List to store userIds
     private FirebaseFirestore db;
     private FirebaseAuth auth;
     private FirebaseStorage storage;
@@ -45,7 +46,7 @@ public class CreateGroupActivity extends AppCompatActivity {
         setContentView(R.layout.group_form);
 
         db = FirebaseFirestore.getInstance(); // Initialize Firestore
-        auth = FirebaseAuth.getInstance(); // Initialize Firebase Auth to get current user
+        auth = FirebaseAuth.getInstance(); // Initialize Firebase Auth
         storage = FirebaseStorage.getInstance(); // Initialize Firebase Storage
 
         lvMembers = findViewById(R.id.lvMembers);
@@ -57,7 +58,8 @@ public class CreateGroupActivity extends AppCompatActivity {
             if (selectedMembers.isEmpty()) {
                 Toast.makeText(CreateGroupActivity.this, "Please select members", Toast.LENGTH_SHORT).show();
             } else {
-                createGroup();
+                // Fetch UserIds for selected members before creating the group
+                fetchUserIdsForSelectedMembers();
             }
         });
 
@@ -99,6 +101,30 @@ public class CreateGroupActivity extends AppCompatActivity {
                         });
                     }
                 });
+    }
+
+    // Fetch UserIds for selected members by their phone numbers
+    private void fetchUserIdsForSelectedMembers() {
+        selectedMemberUserIds.clear(); // Clear the list before fetching userIds
+
+        for (String phoneNumber : selectedMembers) {
+            db.collection("Users")
+                    .whereEqualTo("mobileNumber", phoneNumber)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                String userId = document.getString("userId"); // Get userId
+                                selectedMemberUserIds.add(userId); // Add userId to the list
+                            }
+
+                            // After fetching all userIds, create the group
+                            if (selectedMemberUserIds.size() == selectedMembers.size()) {
+                                createGroupWithUserIds();
+                            }
+                        }
+                    });
+        }
     }
 
     // Custom adapter to handle the list of users with checkboxes
@@ -147,8 +173,8 @@ public class CreateGroupActivity extends AppCompatActivity {
         }
     }
 
-    // Create the group with the selected members and save it in Firestore
-    private void createGroup() {
+    // Create the group with userIds
+    private void createGroupWithUserIds() {
         String groupName = ((EditText) findViewById(R.id.etGroupName)).getText().toString();
         String groupDescription = ((EditText) findViewById(R.id.etGroupDescription)).getText().toString();
         String currentUserId = auth.getCurrentUser().getUid(); // Get the current user ID (admin)
@@ -158,24 +184,65 @@ public class CreateGroupActivity extends AppCompatActivity {
             return;
         }
 
-        // Add current user (admin) to selected members and groupAdmins
-        selectedMembers.add(currentUserId);
+        // Add current user (admin) to selected members
+        selectedMemberUserIds.add(currentUserId);
 
         // Create a Group object
-        Group group = new Group(groupName, groupDescription, selectedMembers, new ArrayList<>(List.of(currentUserId)), null);
+        Group group = new Group(groupName, groupDescription, selectedMemberUserIds, new ArrayList<>(List.of(currentUserId)), null);
 
         // Store the group in Firestore
         db.collection("Groups")
                 .add(group)
                 .addOnSuccessListener(documentReference -> {
+                    String groupId = documentReference.getId(); // Get the created group ID
+
+                    // Update the Users collection for each selected member
+                    updateUsersWithGroupId(groupId);
+
+                    // Handle image upload if there is a selected group image
                     if (groupImageUri != null) {
-                        uploadGroupImage(documentReference.getId());
+                        uploadGroupImage(groupId);
                     } else {
                         Toast.makeText(this, "Group Created Successfully", Toast.LENGTH_SHORT).show();
-                        redirectToGroupChatFragment(); // Call the updated redirect method
+                        redirectToGroupChatFragment(); // Redirect to group chat
                     }
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to create group", Toast.LENGTH_SHORT).show());
+    }
+
+    private void updateUsersWithGroupId(String groupId) {
+        for (String userId : selectedMemberUserIds) {
+            db.collection("Users")
+                    .document(userId) // Use userId directly to update
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            // Check if the user already has a GroupIds array
+                            List<String> groupIds = (List<String>) task.getResult().get("GroupIds");
+
+                            if (groupIds == null) {
+                                groupIds = new ArrayList<>(); // Initialize the list if it doesn't exist
+                            }
+
+                            // Add the new groupId to the list if it's not already present
+                            if (!groupIds.contains(groupId)) {
+                                groupIds.add(groupId);
+                            }
+
+                            // Update the user's document with the updated GroupIds array
+                            db.collection("Users")
+                                    .document(userId)
+                                    .update("GroupIds", groupIds)
+                                    .addOnSuccessListener(aVoid -> {
+                                        // Successfully updated the user's group list
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        // Handle any failures while updating
+                                        Toast.makeText(CreateGroupActivity.this, "Failed to update user with GroupIds", Toast.LENGTH_SHORT).show();
+                                    });
+                        }
+                    });
+        }
     }
 
     // New method to redirect back to GroupChatFragment

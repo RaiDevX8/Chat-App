@@ -70,60 +70,21 @@ public class GroupChatFragment extends Fragment {
                             String groupDescription = groupDoc.getString("groupDescription");
                             List<String> members = (List<String>) groupDoc.get("members");
 
-                            // Check if the current user is a member
-                            if (members.contains(currentUserId)) {
+                            // Check if the current user is a member using userId directly
+                            if (members != null && members.contains(currentUserId)) {
                                 GroupChat groupChat = new GroupChat(groupId, groupName, groupDescription, members);
-                                fetchMembersUserIds(members, groupChat);
+                                groupChatList.add(groupChat); // Add groupChat directly to the list
                             }
                         }
+                        // Update RecyclerView adapter after fetching all groups
+                        groupChatListAdapter = new GroupChatListAdapter(getContext(), groupChatList);
+                        recyclerView.setAdapter(groupChatListAdapter);
                     } else {
                         Log.d("GroupChatFragment", "Error getting groups: ", task.getException());
                     }
                 });
     }
 
-    private void fetchMembersUserIds(List<String> members, GroupChat groupChat) {
-        List<String> memberDetailsList = new ArrayList<>();
 
-        // Loop through the members and fetch userId or mobileNumber
-        for (String member : members) {
-            db.collection("Users")
-                    .whereEqualTo("mobileNumber", member)
-                    .get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                            for (QueryDocumentSnapshot userDoc : task.getResult()) {
-                                String userId = userDoc.getString("userId");
-                                memberDetailsList.add(userId); // Add userId to the member list
-                            }
-                        } else {
-                            db.collection("Users")
-                                    .whereEqualTo("userId", member)
-                                    .get()
-                                    .addOnCompleteListener(userTask -> {
-                                        if (userTask.isSuccessful() && !userTask.getResult().isEmpty()) {
-                                            for (QueryDocumentSnapshot userDoc : userTask.getResult()) {
-                                                String userId = userDoc.getString("userId");
-                                                memberDetailsList.add(userId); // Add userId to the member list
-                                            }
-                                        }
 
-                                        // Once all members are fetched, update the group
-                                        if (!memberDetailsList.isEmpty()) {
-                                            groupChat.setMembers(memberDetailsList);
-                                        }
-
-                                        // Add groupChat to list and update RecyclerView only once
-                                        if (!groupChatList.contains(groupChat)) {
-                                            groupChatList.add(groupChat);
-                                        }
-
-                                        // Update RecyclerView adapter here after fetching all members
-                                        groupChatListAdapter = new GroupChatListAdapter(getContext(), groupChatList);
-                                        recyclerView.setAdapter(groupChatListAdapter);
-                                    });
-                        }
-                    });
-        }
-    }
 }
