@@ -4,25 +4,25 @@
     <color name="primary_dark">#FBC02D</color> <!-- Darker Yellow -->
     <color name="primary_light">#FFF59D</color> <!-- Lighter Yellow -->
 
-    <!-- Background and Gray Shades (White & Gray) -->
-    <color name="gray">#FFFFFF</color> <!-- White -->
-    <color name="light_gray">#F5F5F5</color> <!-- Light Gray Background -->
+    <!-- Background and Gray Shades (Dark Colors) -->
+    <color name="gray">#121212</color> <!-- Dark Background -->
+    <color name="light_gray">#1E1E1E</color> <!-- Slightly Lighter Gray Background -->
     <color name="dark_gray">#A9A9A9</color> <!-- Dark Gray for Text or Borders -->
 
     <!-- Background Colors -->
-    <color name="background">#FFFFFF</color> <!-- White Background -->
-    <color name="chat_bubble_background">#FFFDE7</color> <!-- Light Yellow for Chat Bubble -->
-    <color name="circle_background">#FFFFFF</color> <!-- White for Profile Image Circle Background -->
+    <color name="background">#161616</color> <!-- Dark Background -->
+    <color name="chat_bubble_background">#424242</color> <!-- Dark Gray for Chat Bubble -->
+    <color name="circle_background">#1E1E1E</color> <!-- Dark Circle Background for Profile Image -->
 
     <!-- Accent Colors -->
     <color name="teal">#03DAC5</color> <!-- Teal (You can adjust if necessary) -->
 
     <!-- Extra Colors (White, Black, and Others) -->
-    <color name="purple_500">#6200EE</color> <!-- You can remove if not needed -->
-    <color name="purple_700">#3700B3</color>
-    <color name="purple_200">#BB86FC</color>
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
+    <color name="purple_500">#BB86FC</color> <!-- Adjusted for dark theme -->
+    <color name="purple_700">#6200EE</color>
+    <color name="purple_200">#3700B3</color>
+    <color name="black">#FFFFFF</color>
+    <color name="white">#000000</color>
 
     <!-- Custom Primary and Secondary -->
     <color name="my_primary">#807C58</color> <!-- Primary Yellow -->

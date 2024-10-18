@@ -4,20 +4,33 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:padding="16dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- SearchView with Rounded Background -->
     <SearchView
         android:id="@+id/search_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_bottom_navigation"
+        app:iconTint="@android:color/white"
+        android:textColor="@android:color/white"
+        app:queryBackground="@android:color/transparent"
+    android:padding="8dp"
+    android:iconifiedByDefault="false"
+    android:queryHint="Search Chats"
+    android:layout_marginBottom="16dp" />
 
+    <!-- RecyclerView with Rounded Background -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:padding="8dp"
-        app:layout_constraintTop_toTopOf="@+id/search_view"
-        tools:layout_editor_absoluteX="16dp"
-        tools:listitem="@layout/item_chat" />
+        android:background="@drawable/rounded_recycler_view"
+    app:layout_constraintTop_toTopOf="@+id/search_view"
+    tools:layout_editor_absoluteX="16dp"
+    tools:listitem="@layout/item_chat" />
 
 </LinearLayout>

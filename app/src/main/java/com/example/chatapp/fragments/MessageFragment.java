@@ -39,7 +39,7 @@ public class MessageFragment extends Fragment {
     private String contactName;
     private RecyclerView recyclerView;
     private EditText editTextMessage;
-    private ImageButton buttonSend;
+    private ImageView buttonSend;
     private MessageAdapter messageAdapter;
     private List<Message> messageList;
     private FirebaseFirestore db;
@@ -72,7 +72,7 @@ public class MessageFragment extends Fragment {
         // Initialize views
         recyclerView = view.findViewById(R.id.recycler_view);
         editTextMessage = view.findViewById(R.id.edit_text_message);
-        buttonSend = view.findViewById(R.id.button_send);
+        buttonSend = view.findViewById(R.id.image_view_send);
         imageViewProfile = view.findViewById(R.id.image_view_contact_profile);
         textViewContactName = view.findViewById(R.id.text_view_contact_name);
 

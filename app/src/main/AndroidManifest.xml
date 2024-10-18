@@ -18,7 +18,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.Chatapp"
+        android:theme="@style/Theme.AppCompat.DayNight"
+
+
+
         tools:targetApi="31">
 
         <!-- Main Launcher Activity -->
@@ -34,7 +37,9 @@
         <!-- Other Activities -->
         <activity android:name=".activity.loginphone" />
         <activity android:name=".activity.LoginotpActivity" />
-        <activity android:name=".activity.main_chat_app" />
+        <activity android:name=".activity.main_chat_app"
+            android:windowSoftInputMode="adjustPan|stateHidden"
+        />
         <activity android:name=".activity.Userprofile"/>
         <activity android:name=".activity.CreateGroupActivity"/>
         <activity android:name=".activity.GroupChatActivity"/>

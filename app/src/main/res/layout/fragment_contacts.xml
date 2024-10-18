@@ -1,29 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:orientation="vertical"
-    >
+    android:paddingTop="18dp"> <!-- Set the background color to your theme color -->
 
     <SearchView
         android:id="@+id/search_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_width="362dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@drawable/rounded_bottom_navigation"
+        android:iconifiedByDefault="false"
+        android:padding="8dp"
+        android:queryHint="Search Chats"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
+        app:iconTint="@android:color/white"
+        app:queryBackground="@android:color/transparent" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone"
-        style="?android:attr/progressBarStyleLarge"
+        android:background="@color/background"
         android:indeterminate="true"
-         /> <!-- Set background color to white -->
+        android:visibility="gone" />
 
     <ListView
         android:id="@+id/list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="16dp" /> <!-- Add some margin for better spacing -->
-
+        android:layout_marginTop="16dp"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8dp" />
 </LinearLayout>
