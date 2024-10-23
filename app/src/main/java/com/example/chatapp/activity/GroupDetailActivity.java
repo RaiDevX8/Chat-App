@@ -37,7 +37,6 @@ public class GroupDetailActivity extends AppCompatActivity {
         loadGroupProfileImage(groupId);
 
         // Set the member count (example: assuming static count for now)
-        groupMemberCountTextView.setText("4 members");
     }
 
     private void loadGroupProfileImage(String groupId) {
