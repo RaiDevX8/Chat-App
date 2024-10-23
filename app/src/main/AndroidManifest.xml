@@ -43,6 +43,6 @@
         <activity android:name=".activity.Userprofile"/>
         <activity android:name=".activity.CreateGroupActivity"/>
         <activity android:name=".activity.GroupChatActivity"/>
-
+        <activity android:name=".activity.GroupDetailActivity"/>
     </application>
 </manifest>
